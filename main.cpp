@@ -19,7 +19,7 @@ int main()
   std::getline(std::cin, url);
 
   if (!is_url_valid(url)) {
-    std::cout << "Invalid URL: " << url << "\n";
+    std::cerr << "Invalid URL: " << url << "\n";
     return 1;
   }
 
@@ -27,7 +27,15 @@ int main()
   CURLcode res;
   std::string read_buffer;
 
+  // init
   curl_global_init(CURL_GLOBAL_DEFAULT);
+  curl = curl_easy_init();
 
+  if (!curl) {
+    std::cerr << "Could not initialize curl" << "\n";
+    return 1;
+  }
+
+  printf("Exiting...!\n");
   return 0;
 }
