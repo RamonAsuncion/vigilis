@@ -4,7 +4,7 @@
 #include <SFML/Network.hpp>
 
 // int read_int();
-int read_int(const std::string& prompt, const std::string& error_message);
+int read_int(const std::string& prompt, const std::string& error_message, int min_value, int max_value);
 
 // reference: https://curl.se/libcurl/c/libcurl-tutorial.html
 
@@ -39,7 +39,7 @@ void scan_port()
   std::getline(std::cin, address);
 
   // Get port
-  port = read_int("Port: ", "Invalid Port.");
+  port = read_int("Port: ", "Invalid Port.", 1, 65535);
 
   // Scan
   std::cout << "Scanning " << address << "...\n" << "Port " << port << " : ";
@@ -90,7 +90,7 @@ void fetch_url_data()
   // curl_global_cleanup();
 }
 
-int read_int(const std::string& prompt, const std::string& error_message)
+int read_int(const std::string& prompt, const std::string& error_message, int min_value = INT_MIN, int max_value = INT_MAX)
 {
   int val;
 
@@ -104,8 +104,12 @@ int read_int(const std::string& prompt, const std::string& error_message)
       std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
       std::cout << error_message << std::endl;
     } else {
-      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-      return val;
+ if (val >= min_value && val <= max_value) {
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        return val;
+      } else {
+        std::cout << "Enter " << min_value << "-" << max_value << ".\n";
+      }
     }
   }
 }
@@ -125,7 +129,7 @@ int main()
   do {
 
     display_menu();
-    choice = read_int("Enter choice: ", "Invalid choice.");
+    choice = read_int("Enter choice: ", "Invalid choice.", 1, 2);
 
     switch (choice) {
       case 1:
@@ -135,7 +139,7 @@ int main()
         std::cout << "Exiting...\n";
         break;
       default:
-        std::cout << "Invalid choice" << '\n';
+        break;
     }
   } while (choice != 2);
 
