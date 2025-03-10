@@ -3,13 +3,10 @@
 #include <iostream>
 #include <SFML/Network.hpp>
 
+// int read_int();
+int read_int(const std::string& prompt, const std::string& error_message);
+
 // reference: https://curl.se/libcurl/c/libcurl-tutorial.html
-
-
-/**
- * Implement:
- * Port scanning.
- */
 
 // https://cplusplus.com/articles/o2N36Up4/
 // https://www.sfml-dev.org/documentation/3.0.0/classsf_1_1IpAddress.html
@@ -32,73 +29,35 @@ bool is_url_valid(const std::string& url)
   return (url.substr(0, 7) == "http://") || (url.substr(0, 8) == "https://");
 }
 
-void display_menu()
+void scan_port()
 {
-  std::cout << "Vigilis tool:\n";
-  std::cout << "1. Port Scanning\n";
-  std::cout << "2. Exit\n";
-  std::cout << '\n' << std::string(10, '-') << "\n";
+  std::string address;
+  int port;
+
+  // Get address
+  std::cout << "Address: " << std::flush;
+  std::getline(std::cin, address);
+
+  // Get port
+  port = read_int("Port: ", "Invalid Port.");
+
+  // Scan
+  std::cout << "Scanning " << address << "...\n" << "Port " << port << " : ";
+  if (port_is_open(address, port))
+    std::cout << "OPEN" << std::endl;
+  else
+    std::cout << "CLOSED" << std::endl;
 }
 
-int main()
+void fetch_url_data()
 {
-  int choice = 0;
-
-  do {
-    std::string address;
-    int port;
-
-    display_menu();
-
-    std::cin >> choice;
-
-    // FIXME: ignore left over twice???
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-    // reference: https://isocpp.org/wiki/faq/input-output#istream-and-ignore
-    if (std::cin.fail()) {
-      std::cin.clear();
-      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-      std::cout << "Invalid choice\n";
-      continue;
-    }
-
-    switch (choice) {
-      case 1:
-        {
-          // Get address
-          std::cout << "Address: " << std::flush;
-          std::getline(std::cin, address);
-
-          // Get port
-          std::cout << "Port: " << std::flush;
-          std::cin >> port;
-
-          // Scan
-          std::cout << "Scanning " << address << "...\n" << "Port " << port << " : ";
-          if (port_is_open(address, port))
-            std::cout << "OPEN" << std::endl;
-          else
-            std::cout << "CLOSED" << std::endl;
-          break;
-        }
-      case 2:
-        std::cout << "Exiting...\n";
-        break;
-      default:
-        std::cout << "Invalid choice" << '\n';
-    }
-  } while (choice != 2);
-
-
-#ifdef DEBUG
   std::string url;
   std::cout << "Enter a URL: ";
   std::getline(std::cin, url);
 
   if (!is_url_valid(url)) {
     std::cerr << "Invalid URL: " << url << '\n';
-    return 1;
+    return;
   }
 
   CURL *curl;
@@ -106,13 +65,13 @@ int main()
   std::string read_buffer;
 
   // init
-  curl_global_init(CURL_GLOBAL_DEFAULT);
+  // curl_global_init(CURL_GLOBAL_DEFAULT);
   curl = curl_easy_init();
 
   if (!curl) {
     std::cerr << "Could not initialize curl" << '\n';
     curl_global_cleanup();
-    return 1;
+    return;
   }
 
   curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
@@ -128,8 +87,61 @@ int main()
   std::cout << read_buffer << '\n';
 
   curl_easy_cleanup(curl);
+  // curl_global_cleanup();
+}
 
-  curl_global_cleanup();
+int read_int(const std::string& prompt, const std::string& error_message)
+{
+  int val;
+
+  while (true) {
+    std::cout << prompt;
+    std::cin >> val;
+
+    // reference: https://isocpp.org/wiki/faq/input-output#istream-and-ignore
+    if (std::cin.fail()) {
+      std::cin.clear();
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      std::cout << error_message << std::endl;
+    } else {
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      return val;
+    }
+  }
+}
+
+void display_menu()
+{
+  std::cout << "Vigilis tool:\n";
+  std::cout << "1. Port Scanning\n";
+  std::cout << "2. Exit\n";
+  std::cout << '\n' << std::string(10, '-') << "\n";
+}
+
+int main()
+{
+  int choice = 0;
+
+  do {
+
+    display_menu();
+    choice = read_int("Enter choice: ", "Invalid choice.");
+
+    switch (choice) {
+      case 1:
+        scan_port();
+        break;
+      case 2:
+        std::cout << "Exiting...\n";
+        break;
+      default:
+        std::cout << "Invalid choice" << '\n';
+    }
+  } while (choice != 2);
+
+
+#ifdef DEBUG
+  fetch_url_data();
 #endif
 
   return 0;
