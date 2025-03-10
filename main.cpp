@@ -104,7 +104,7 @@ int read_int(const std::string& prompt, const std::string& error_message, int mi
       std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
       std::cout << error_message << std::endl;
     } else {
- if (val >= min_value && val <= max_value) {
+      if (val >= min_value && val <= max_value) {
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         return val;
       } else {
