@@ -1,6 +1,7 @@
 #include <curl/curl.h>
 #include <string>
 #include <iostream>
+#include <SFML/Network.hpp>
 
 // reference: https://curl.se/libcurl/c/libcurl-tutorial.html
 
@@ -9,6 +10,18 @@
  * Implement:
  * Port scanning.
  */
+
+// https://cplusplus.com/articles/o2N36Up4/
+// https://www.sfml-dev.org/documentation/3.0.0/classsf_1_1IpAddress.html
+
+// TODO: Separate into it's own
+bool port_is_open(const std::string& address, int port)
+{
+    sf::TcpSocket socket;
+    bool open = (socket.connect(*sf::IpAddress::resolve(address), port) == sf::Socket::Status::Done);
+    socket.disconnect();
+    return open;
+}
 
 size_t write_callback(void *contents, size_t size, size_t nmemb, void *userp)
 {
